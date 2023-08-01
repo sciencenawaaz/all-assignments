@@ -2,18 +2,46 @@ const express = require('express');
 const app = express();
 
 app.use(express.json());
-
+//impliment mongoDB
 let ADMINS = [];
 let USERS = [];
 let COURSES = [];
 
+let userExists = (user) => {
+  
+  let exists = ADMINS.filter((u) => u.username === user.username);
+
+  if(exists[0]) return true;
+  return false;
+}
+let userVerify = (password) => {
+  
+  let exists = ADMINS.filter((u) => u.password === password);
+
+  if(exists[0]) return true;
+  return false;
+}
+
 // Admin routes
 app.post('/admin/signup', (req, res) => {
   // logic to sign up admin
+ let {username , password } = req.body;
+ let user = {username ,  password};
+ let exists = userExists(user);
+if(exists){ return res.status(403).json({msg:"User already exists"})}
+ ADMINS.push(user);
+ res.status(201).json(ADMINS);
 });
 
 app.post('/admin/login', (req, res) => {
   // logic to log in admin
+  let username  = req.headers.username;
+  let password  = req.headers.password;
+  let user = {username ,  password};
+  let exists = userExists(user);
+  let verify = userVerify(password);
+  if(exists && verify ) return res.status(200).json({msg:"Admin LoggedIn"})
+   return res.status(403).json({msg:"Wrong Credentials"}) ;
 });
 
 app.post('/admin/courses', (req, res) => {
