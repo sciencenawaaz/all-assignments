@@ -1,36 +1,49 @@
 const express = require('express');
 const app = express();
-
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 app.use(express.json());
+dotenv.config();
 //impliment mongoDB
 let ADMINS = [];
 let USERS = [];
 let COURSES = [];
 
-let userExists = (user) => {
-  
-  let exists = ADMINS.filter((u) => u.username === user.username);
 
-  if(exists[0]) return true;
-  return false;
-}
-let userVerify = (password) => {
-  
-  let exists = ADMINS.filter((u) => u.password === password);
+//MONGODB MODELS
 
-  if(exists[0]) return true;
-  return false;
-}
+//ADMIN MODEL
+
+const ADMIN = new mongoose.Schema ({
+  
+  username : {type: String , required: true},
+  password : {type: String , required: true}
+  
+})
+
+const AdminSchema = mongoose.model('ADMIN' , ADMIN);
+
+//DB connect
+mongoose.connect(process.env.MONGO_URI,{ useNewUrlParser: true, useUnifiedTopology: true, dbName: "courses" })
+                                    .then(() => {console.log('Mongoose online')})
+                                    .catch((err) => {console.log(err);});
 
 // Admin routes
-app.post('/admin/signup', (req, res) => {
+app.post('/admin/signup',  (req, res) => {
   // logic to sign up admin
  let {username , password } = req.body;
- let user = {username ,  password};
- let exists = userExists(user);
-if(exists){ return res.status(403).json({msg:"User already exists"})}
- ADMINS.push(user);
- res.status(201).json(ADMINS);
+ 
+ let adminSave = async (admin) => {
+   if(admin)  return res.status(403).json({msg:"Admin already exists"})
+   
+  let user = {username ,  password};
+  let newAdmin = new AdminSchema(user)
+  await newAdmin.save();
+  res.status(201).json({msg:"Admin created successfully"});
+ }
+
+ AdminSchema.findOne({username}).then(adminSave);
+ 
 });
 
 app.post('/admin/login', (req, res) => {
