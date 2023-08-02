@@ -1,6 +1,7 @@
 const express = require('express');
-const app = express();
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const app = express();
 const dotenv = require('dotenv');
 app.use(express.json());
 dotenv.config();
@@ -39,7 +40,8 @@ app.post('/admin/signup',  (req, res) => {
   let user = {username ,  password};
   let newAdmin = new AdminSchema(user)
   await newAdmin.save();
-  res.status(201).json({msg:"Admin created successfully"});
+  const token = jwt.sign({username} , process.env.SECRET , {expiresIn : '1h'});
+  res.status(201).json({msg:"Admin created successfully", token});
  }
 
  AdminSchema.findOne({username}).then(adminSave);
@@ -50,10 +52,14 @@ app.post('/admin/login', (req, res) => {
   // logic to log in admin
   let username  = req.headers.username;
   let password  = req.headers.password;
-  let user = {username ,  password};
-  let exists = userExists(user);
-  let verify = userVerify(password);
-  if(exists && verify ) return res.status(200).json({msg:"Admin LoggedIn"})
+  const user = AdminSchema.findOne({username ,  password});
+
+  if( user ){
+
+    const token = jwt.sign({username} , process.env.SECRET , {expiresIn : '1h'});
+
+    return res.status(200).json({msg:"Admin LoggedIn" , token})
+  }
    return res.status(403).json({msg:"Wrong Credentials"}) ;
 });
 
