@@ -5,11 +5,9 @@ const app = express();
 const dotenv = require('dotenv');
 app.use(express.json());
 dotenv.config();
-//impliment mongoDB
-let ADMINS = [];
-let USERS = [];
-let COURSES = [];
 
+
+//impliment mongoDB
 
 //MONGODB MODELS
 
@@ -22,12 +20,40 @@ const ADMIN = new mongoose.Schema ({
   
 })
 
+
+const courseSchema = new mongoose.Schema ({
+  title: String,
+  description: String,
+  price: Number,
+  imageLink: String,
+  published: Boolean
+});
+
 const AdminSchema = mongoose.model('ADMIN' , ADMIN);
+const Course = mongoose.model("Course" ,  courseSchema);
 
 //DB connect
 mongoose.connect(process.env.MONGO_URI,{ useNewUrlParser: true, useUnifiedTopology: true, dbName: "courses" })
                                     .then(() => {console.log('Mongoose online')})
                                     .catch((err) => {console.log(err);});
+
+//Authenticate JWT
+
+const authenticateJwt = (req , res , next) => {
+  const token = req.headers.token;
+  if(token) {
+    jwt.verify(token,  process.env.SECRET, (err, user) => {
+      if (err) {
+        return res.sendStatus(403);
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.sendStatus(401);
+  }
+}
+
 
 // Admin routes
 app.post('/admin/signup',  (req, res) => {
@@ -63,16 +89,28 @@ app.post('/admin/login', (req, res) => {
    return res.status(403).json({msg:"Wrong Credentials"}) ;
 });
 
-app.post('/admin/courses', (req, res) => {
+app.post('/admin/courses', authenticateJwt , async (req, res) => {
   // logic to create a course
+  const course = new Course(req.body);
+  await course.save();
+ 
+  return res.status(201).json({msg:"Course created successfully" , courseId: course.id})
 });
 
-app.put('/admin/courses/:courseId', (req, res) => {
+app.put('/admin/courses/:courseId',authenticateJwt , async (req, res) => {
   // logic to edit a course
+  const course = await Course.findByIdAndUpdate(req.params.courseId , req.body , {new:true});
+  if(course) {
+      return res.json({msg:"Course Updated"});
+  } else {
+    return res.status(404).json({msg:"Course not found"});
+  }
 });
 
-app.get('/admin/courses', (req, res) => {
+app.get('/admin/courses',authenticateJwt, async (req, res) => {
   // logic to get all courses
+  const courses = await Course.find({});
+    return res.json({courses});
 });
 
 // User routes
