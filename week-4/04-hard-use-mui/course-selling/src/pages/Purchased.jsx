@@ -17,6 +17,7 @@ import axios from 'axios';
 import Footer from '../components/Footer';
 
 let newCourse = [];
+let id = 0;
 
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -28,27 +29,35 @@ export default function Purchased() {
 
   async function getCourses() {
   
+    const token = localStorage.getItem('token');
+    axios.defaults.headers.common['Authorization'] = token;
    
     const Data = await axios.get("http://localhost:3000/users/purchasedCourses");
-      console.log(Data);
+      // console.log(Data.data.PurchasedCourses);
    const Courses = Data.data;
  
-   const Course = Courses.courses;
+   const Course = Data.data.PurchasedCourses;
+   for (let i = 0; i < Course.length; i++) {
+    
+     Course[i].id = id++;
+    
+   }
+  //  console.log(Course);
 
-   newCourse = [...newCourse , ...Course];
+  newCourse = [...newCourse , ...Course];
 
     setTitle();
     setDescription();
     setImage();
 
-  //  console.log(newCourse);
+    console.log(newCourse);
     return newCourse;
  };
-
+ 
  useEffect(() => {
-        
    getCourses()
    return () => {
+     
    }
  }, [])
  
@@ -94,13 +103,14 @@ export default function Purchased() {
           <Grid container spacing={4}>
             {newCourse.map((card) => (
               
-              <Grid item key={card._id} xs={12} sm={6} md={4}>
+              <Grid item key={card.id} xs={12} sm={6} md={4}>
               
                 <Card
                   sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
                 >
                   <CardMedia
                     component="div"
+                    
                     sx={{
                       // 16:9
                       pt: '56.25%',
@@ -109,17 +119,13 @@ export default function Purchased() {
                     image= {card.imageLink}
                   />
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography gutterBottom variant="h5" component="h2" >
+                    <Typography gutterBottom variant="h5" component="h2"  >
                       {card.title}
                     </Typography>
-                    <Typography>
+                    <Typography >
                       {card.description}
                     </Typography>
                   </CardContent>
-                  <CardActions>
-                    <Button size="small" >View</Button>
-                    <Button size="small">Edit</Button>
-                  </CardActions>
                 </Card>
               </Grid>
             ))}
