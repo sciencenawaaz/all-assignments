@@ -12,10 +12,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import axios from 'axios';
 
-function Copyright(props) {
+function Copyright() {
   return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+    <Typography variant="body2" color="text.secondary" align="center">
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
         Your Website
@@ -31,14 +32,33 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
+
+  
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+  
+      let email =  data.get('email');
+      let password = data.get('password'); 
+
+  await axios.post("http://localhost:3000/users/signup" , {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    username: email,
+    password,})
+      .then((res)=>{
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        console.log(res.data.msg, "success");
+          }
+        }
+      ).catch((err) => {
+        console.error(err);
+      })
+      ;
+}
 
   return (
     <ThemeProvider theme={defaultTheme}>

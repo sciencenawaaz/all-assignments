@@ -3,7 +3,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Course, Courses, Login, Purchased, SignUp } from "./pages/";
+import { Course, Courses, Login, Purchased, SignUp, Test } from "./pages/";
 
 
 
@@ -17,6 +17,7 @@ function App() {
        <Route path ="/courses" element = {<Courses/>} />
        <Route path ="/course/:id" element = {<Course/>} />
        <Route path ="/courses/purchased" element = {<Purchased/>} />
+       <Route path ="/test" element = {<Test/>} />
      </Routes>
    </BrowserRouter>
   )

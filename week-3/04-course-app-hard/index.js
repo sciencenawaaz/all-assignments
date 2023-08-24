@@ -1,9 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express();
 const dotenv = require('dotenv');
 app.use(express.json());
+app.use(cors());
 dotenv.config();
 
 
@@ -141,8 +143,8 @@ app.post('/users/signup', (req, res) => {
 
 app.post('/users/login', async (req, res) => {
   // logic to log in user
-  let username  = req.headers.username;
-  let password  = req.headers.password;
+  let username  = req.body.username;
+  let password  = req.body.password;
   const user = await User.findOne({username ,  password});
 
   if( user ){
