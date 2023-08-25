@@ -16,8 +16,6 @@ import { useState,useEffect } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer';
 
-let newCourse = [];
-
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -25,37 +23,40 @@ const defaultTheme = createTheme();
 export default function Courses() {
   
 
-
-  async function getCourses() {
+  const [Courses, setCourses] = useState([]);
   
-   const Data = await axios.get("http://localhost:3000/users/courses");
-
-   const Courses = Data.data;
- 
-   const Course = Courses.courses;
-
-   newCourse = [...newCourse , ...Course];
-
-    setTitle();
-    setDescription();
-    setImage();
-
-  //  console.log(newCourse);
-    return newCourse;
- };
-
- useEffect(() => {
-        
-   getCourses()
-   return () => {
-   }
- }, [])
- 
-
- const [Title, setTitle] = useState("Loading...");
- const [Description , setDescription] = useState("Loading...");
- const [Image , setImage] = useState("Loading");
-
+  async function buyCourse(courseId) {
+    const token = localStorage.getItem('token');
+    
+    axios.defaults.headers.common['Authorization'] = token;
+    console.log(courseId);
+    const response = await axios.post(`http://localhost:3000/users/courses/${courseId}`)
+                                    .then((res) => {console.log(res)})
+                                    .catch((err) => console.log(err));
+        return
+  }
+  
+  
+  
+  async function getCourses() {
+    
+    const response = await axios.get("http://localhost:3000/users/courses");
+    
+    const Courses = response.data.courses;
+    
+    setCourses([...Courses]); 
+    
+    return
+  };
+  
+  useEffect(() => {
+    
+    getCourses()
+    return () => {
+    }
+  }, [])
+  
+  
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
@@ -91,12 +92,13 @@ export default function Courses() {
         <Container sx={{ py: 4 }} maxWidth="md">
           {/* End hero unit */}
           <Grid container spacing={4}>
-            {newCourse.map((card) => (
+            {Courses.map((card) => (
               
               <Grid item key={card._id} xs={12} sm={6} md={4}>
               
                 <Card
                   sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                  
                 >
                   <CardMedia
                     component="div"
@@ -116,7 +118,7 @@ export default function Courses() {
                     </Typography>
                   </CardContent>
                   <CardActions>
-                    <Button size="small" >View</Button>
+                    <Button size="small" onClick={()=> buyCourse(card._id)} >Buy</Button>
                     <Button size="small">Edit</Button>
                   </CardActions>
                 </Card>

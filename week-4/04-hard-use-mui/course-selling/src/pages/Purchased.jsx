@@ -1,8 +1,6 @@
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,7 +14,7 @@ import { useState,useEffect } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer';
 
-let newCourse = [];
+
 let id = 0;
 
 
@@ -25,33 +23,25 @@ const defaultTheme = createTheme();
 
 export default function Purchased() {
   
-
+  const [Courses, setCourses] = useState([]);
 
   async function getCourses() {
   
     const token = localStorage.getItem('token');
     axios.defaults.headers.common['Authorization'] = token;
    
-    const Data = await axios.get("http://localhost:3000/users/purchasedCourses");
-      // console.log(Data.data.PurchasedCourses);
-   const Courses = Data.data;
+   const response = await axios.get("http://localhost:3000/users/purchasedCourses");
  
-   const Course = Data.data.PurchasedCourses;
-   for (let i = 0; i < Course.length; i++) {
+   const Courses = response.data.PurchasedCourses;
+   for (let i = 0; i < Courses.length; i++) {
     
-     Course[i].id = id++;
+     Courses[i].id = id++;
     
    }
-  //  console.log(Course);
+ 
+   setCourses([...Courses]);
 
-  newCourse = [...newCourse , ...Course];
-
-    setTitle();
-    setDescription();
-    setImage();
-
-    console.log(newCourse);
-    return newCourse;
+    return;
  };
  
  useEffect(() => {
@@ -60,11 +50,6 @@ export default function Purchased() {
      
    }
  }, [])
- 
-
- const [Title, setTitle] = useState("Loading...");
- const [Description , setDescription] = useState("Loading...");
- const [Image , setImage] = useState("Loading");
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -101,7 +86,7 @@ export default function Purchased() {
         <Container sx={{ py: 4 }} maxWidth="md">
           {/* End hero unit */}
           <Grid container spacing={4}>
-            {newCourse.map((card) => (
+            {Courses.map((card) => (
               
               <Grid item key={card.id} xs={12} sm={6} md={4}>
               
